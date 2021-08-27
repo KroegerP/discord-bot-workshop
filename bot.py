@@ -80,6 +80,8 @@ async def on_voice_state_update(member, before, after):
             await voiceChannel.connect()
             voice = discord.utils.get(client.voice_clients, guild=after.channel.guild)
             voice.play(discord.PCMVolumeTransformer(discord.FFmpegPCMAudio("audio-testing\\NFL.mp3"), volume=0.1))
+            asyncio.wait(10)
+            voice.stop()
 
 @client.command()
 async def join(ctx):
