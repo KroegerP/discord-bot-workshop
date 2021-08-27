@@ -107,7 +107,7 @@ async def play(ctx, url : str):
     except PermissionError:
         await ctx.send("Wait for current music to end")
         return
-    voiceChannel = discord.utils.get(ctx.guild.voice_channels, name='Jag\'s Quiet Room')
+    voiceChannel = discord.utils.get(ctx.guild.voice_channels, name='anime')
     voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
     if voice is None:
         await voiceChannel.connect()
@@ -147,5 +147,22 @@ async def resume(ctx):
 async def stop(ctx):
     voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
     voice.stop()
+
+@client.command(pass_context=True)
+async def addThemeSong(ctx, url : str, member : discord.Member = None):
+    member = member or ctx.author
+    songDirectory = f'theme-songs\\{member}'
+    print(songDirectory)
+    print(url)
+    hasThemeSong = os.path.isdir(f'theme-songs\\{member}')
+    print(hasThemeSong)
+    # if theme_song:
+    #     song_there = os.path.isfile("song.mp3")
+    # try:
+    #     if song_there:
+    #         os.remove("song.mp3")
+    # except PermissionError:
+    #     await ctx.send("Wait for current music to end")
+    #     return
 
 client.run(os.getenv('GUILD_TOKEN'))
