@@ -7,6 +7,7 @@ import youtube_dl
 import os
 import requests
 import json
+import asyncio
 
 # client = discord.Client()
 # creating a connection
