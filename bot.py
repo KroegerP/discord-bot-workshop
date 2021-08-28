@@ -78,7 +78,8 @@ async def on_voice_state_update(member, before, after):
         await voiceChannel.connect()
         voice = discord.utils.get(client.voice_clients, guild=after.channel.guild)
         myAudio = discord.FFmpegPCMAudio(f'{songDirectory}\\themeSong.mp3')
-        myAdjustedAudio = discord.PCMVolumeTransformer(myAudio, volume=0.1)
+        myAdjustedAudio = discord.PCMVolumeTransformer(myAudio)
+        myAdjustedAudio.volume = 0.1
         voice.play(myAdjustedAudio)
         # asyncio.wait(10)
         # voice.stop()
