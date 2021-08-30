@@ -1,7 +1,7 @@
 import discord
 
 from discord.ext import commands
-from discord import FFmpegPCMAudio
+from discord import FFmpegPCMAudio, PCMVolumeTransformer
 from dotenv import load_dotenv
 import youtube_dl
 import os
@@ -44,7 +44,7 @@ async def ping2(ctx):
 
 @client.command()
 async def clear(ctx, amount=5):
-    if(amount >= 20):
+    if(amount >= 10):
         amount = 5
     await ctx.channel.purge(limit = amount)
 
@@ -76,20 +76,16 @@ async def on_voice_state_update(member, before, after):
     if (before.channel == None and after.channel != None and song_there):
         voiceChannel = after.channel
         await voiceChannel.connect()
-        voice = discord.utils.get(client.voice_clients, guild=after.channel.guild)
-        myAudio = discord.FFmpegPCMAudio(f'{songDirectory}\\themeSong.mp3')
-        myAdjustedAudio = discord.PCMVolumeTransformer(myAudio)
+        await asyncio.sleep(0.5)
+        voice: discord.VoiceClient = discord.utils.get(client.voice_clients, guild=after.channel.guild)
+        myAudio = FFmpegPCMAudio(f'{songDirectory}\\themeSong.mp3')
+        myAdjustedAudio = PCMVolumeTransformer(myAudio)
         myAdjustedAudio.volume = 0.1
         voice.play(myAdjustedAudio)
-        # asyncio.wait(10)
-        # voice.stop()
-        # elif (member.id == 347028600568020992): # If Ben is the person making voice changes
-        #     voiceChannel = after.channel
-        #     await voiceChannel.connect()
-        #     voice = discord.utils.get(client.voice_clients, guild=after.channel.guild)
-        #     voice.play(discord.PCMVolumeTransformer(discord.FFmpegPCMAudio("audio-testing\\NFL.mp3"), volume=0.1))
-        #     asyncio.wait(10)
-        #     voice.stop()
+        await asyncio.sleep(10)
+        voice.stop()
+        if voice.is_connected():
+            await voice.disconnect()
 
 @client.command()
 async def join(ctx):
@@ -109,26 +105,26 @@ async def playTest(ctx):
     voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
     voice.play(discord.PCMVolumeTransformer(discord.FFmpegPCMAudio("audio-testing\\NFL.mp3"), volume=0.5))
 
-@client.command()
-async def play(ctx, url : str):
-    song_there = os.path.isfile("song.mp3")
-    try:
-        if song_there:
-            os.remove("song.mp3")
-    except PermissionError:
-        await ctx.send("Wait for current music to end")
-        return
-    voiceChannel = discord.utils.get(ctx.guild.voice_channels, name='anime')
-    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
-    if voice is None:
-        await voiceChannel.connect()
-    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
-    for file in os.listdir("./"):
-        if file.endswith(".mp3"):
-            os.rename(file, "song.mp3")
-    voice.play(discord.FFmpegPCMAudio("song.mp3"))
+# @client.command()
+# async def play(ctx, url : str):
+#     song_there = os.path.isfile("song.mp3")
+#     try:
+#         if song_there:
+#             os.remove("song.mp3")
+#     except PermissionError:
+#         await ctx.send("Wait for current music to end")
+#         return
+#     voiceChannel = discord.utils.get(ctx.guild.voice_channels, name='anime')
+#     voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+#     if voice is None:
+#         await voiceChannel.connect()
+#     voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+#     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+#         ydl.download([url])
+#     for file in os.listdir("./"):
+#         if file.endswith(".mp3"):
+#             os.rename(file, "song.mp3")
+#     voice.play(discord.FFmpegPCMAudio("song.mp3"))
 
 @client.command()
 async def leave(ctx):
@@ -161,6 +157,7 @@ async def stop(ctx):
 
 @client.command(pass_context=True)
 async def addThemeSong(ctx, url : str, member : discord.Member = None):
+    await ctx.send("Loading theme song...")
     member = member or ctx.author
     songDirectory = f'theme-songs\\{member}'
     print(songDirectory)
@@ -182,7 +179,7 @@ async def addThemeSong(ctx, url : str, member : discord.Member = None):
             if file.endswith(".mp3"):
                 os.rename(file, f'{songDirectory}\\themeSong.mp3')
     print("Theme Song successfully added!")
-    # await ctx.channel.purge(limit = 1)
-    # await client.send("Theme Song Added!")
+    await ctx.channel.purge(limit = 1)
+    await ctx.send("Theme Song Added!")
 
 client.run(os.getenv('GUILD_TOKEN'))
