@@ -173,11 +173,15 @@ async def addThemeSong(ctx, url : str, member : discord.Member = None):
             return
     else:
         os.mkdir(f'{songDirectory}')
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
-        for file in os.listdir('./'):
-            if file.endswith(".mp3"):
-                os.rename(file, f'{songDirectory}\\themeSong.mp3')
+    try: 
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+            for file in os.listdir('./'):
+                if file.endswith(".mp3"):
+                    os.rename(file, f'{songDirectory}\\themeSong.mp3')
+    except:
+            await ctx.channel.purge(limit = 1)
+            await ctx.send("Error downloading song! Please try again.")
     print("Theme Song successfully added!")
     await ctx.channel.purge(limit = 1)
     await ctx.send("Theme Song Added!")
