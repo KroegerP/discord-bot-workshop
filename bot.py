@@ -11,7 +11,8 @@ import asyncio
 
 # client = discord.Client()
 # creating a connection
-client = commands.Bot(command_prefix = 'mybot ')
+# client = commands.Bot(command_prefix = 'mybot ')
+client = commands.Bot(command_prefix = '$')
 # Loading in the .env file that has our guild token
 load_dotenv('.env')
 myId = os.getenv('PERSONAL_ID')
@@ -68,14 +69,15 @@ async def on_message(message):
 
 @client.event
 async def on_voice_state_update(member, before, after):
+    voiceChannel = after.channel
     print(f'{member} has made a voice state change')
     if (member.bot or after.channel is None):                        # Checking that the bot does not trigger the rest of the code
         return
     songDirectory = f'theme-songs\\{member}'
     song_there = os.path.isfile(f'{songDirectory}\\themeSong.mp3')
     if (before.channel == None and after.channel != None and song_there):
-        voiceChannel = after.channel
-        await voiceChannel.connect()
+        if voiceChannel is None:
+            await voiceChannel.connect()
         await asyncio.sleep(0.5)
         voice: discord.VoiceClient = discord.utils.get(client.voice_clients, guild=after.channel.guild)
         myAudio = FFmpegPCMAudio(f'{songDirectory}\\themeSong.mp3')
@@ -97,13 +99,16 @@ async def join(ctx):
         await ctx.send("I am already connected to a channel!")
 
 @client.command()
-async def playTest(ctx):
+async def p(ctx):
     voiceChannel = discord.utils.get(ctx.guild.voice_channels, name='anime')
     voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
     if voice is None:
         await voiceChannel.connect()
     voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
-    voice.play(discord.PCMVolumeTransformer(discord.FFmpegPCMAudio("audio-testing\\NFL.mp3"), volume=0.5))
+    if not voice.is_playing():
+        voice.play(discord.PCMVolumeTransformer(discord.FFmpegPCMAudio("audio-testing\\draftSong.mp3"), volume=0.5))
+        await asyncio.sleep(7)
+        voice.stop()
 
 # @client.command()
 # async def play(ctx, url : str):
