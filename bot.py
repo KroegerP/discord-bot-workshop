@@ -76,8 +76,7 @@ async def on_voice_state_update(member, before, after):
     songDirectory = f'theme-songs\\{member}'
     song_there = os.path.isfile(f'{songDirectory}\\themeSong.mp3')
     if (before.channel == None and after.channel != None and song_there):
-        if voiceChannel is None:
-            await voiceChannel.connect()
+        await voiceChannel.connect()
         await asyncio.sleep(0.5)
         voice: discord.VoiceClient = discord.utils.get(client.voice_clients, guild=after.channel.guild)
         myAudio = FFmpegPCMAudio(f'{songDirectory}\\themeSong.mp3')
