@@ -82,7 +82,7 @@ async def on_voice_state_update(member, before, after):
         myAudio = FFmpegPCMAudio(f'{songDirectory}\\themeSong.mp3')
         myAdjustedAudio = PCMVolumeTransformer(myAudio)
         myAdjustedAudio.volume = 0.1
-        voice.play(myAdjustedAudio)
+        voice.play(myAudio)
         await asyncio.sleep(10)
         voice.stop()
         if voice.is_connected():
