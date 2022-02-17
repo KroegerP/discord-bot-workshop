@@ -12,7 +12,7 @@ import asyncio
 # client = discord.Client()
 # creating a connection
 # client = commands.Bot(command_prefix = 'mybot ')
-client = commands.Bot(command_prefix = '$')
+command_prefix = '$'
 # Loading in the .env file that has our guild token
 load_dotenv('.env')
 myId = os.getenv('PERSONAL_ID')
@@ -26,7 +26,9 @@ ydl_opts = {
             }],
         }
 
-# @ is a decorator functionS
+client = commands.Bot(command_prefix)
+
+# @ is a decorator functions
 @client.event
 async def on_ready():
     print('Bot is ready!')
@@ -50,36 +52,18 @@ async def clear(ctx, amount=5):
     await ctx.channel.purge(limit = amount)
 
 @client.event
-async def on_message(message):
-    await client.process_commands(message)
-    if (message.content.startswith('dog')):
-        # response object is given to you
-        request = requests.get('https://some-random-api.ml/img/dog')
-        print(request.text)
-        json_dog = json.loads(request.text)
-        print(json_dog)
-        
-        request2 = requests.get('https://some-random-api.ml/facts/dog')
-        json_fact = json.loads(request2.text)
-
-        embed = discord.Embed(title='Here is a cool dog', color=discord.Color.blue())
-        embed.set_image(url=json_dog['link'])
-        embed.set_footer(text=json_fact['fact'])
-        await message.channel.send(embed=embed)
-
-@client.event
 async def on_voice_state_update(member, before, after):
     voiceChannel = after.channel
-    print(f'{member} has made a voice state change')
+    print(f'{member} has joined {voiceChannel}')
     if (member.bot or after.channel is None):                        # Checking that the bot does not trigger the rest of the code
         return
-    songDirectory = f'theme-songs\\{member}'
-    song_there = os.path.isfile(f'{songDirectory}\\themeSong.mp3')
+    songDirectory = f'theme-songs/{member}'
+    song_there = os.path.isfile(f'{songDirectory}/themeSong.mp3')
     if (before.channel == None and after.channel != None and song_there):
         await voiceChannel.connect()
         await asyncio.sleep(0.5)
         voice: discord.VoiceClient = discord.utils.get(client.voice_clients, guild=after.channel.guild)
-        myAudio = FFmpegPCMAudio(f'{songDirectory}\\themeSong.mp3')
+        myAudio = FFmpegPCMAudio(f'{songDirectory}/themeSong.mp3')
         myAdjustedAudio = PCMVolumeTransformer(myAudio)
         myAdjustedAudio.volume = 0.1
         voice.play(myAudio)
@@ -105,7 +89,7 @@ async def p(ctx):
         await voiceChannel.connect()
     voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
     if not voice.is_playing():
-        voice.play(discord.PCMVolumeTransformer(discord.FFmpegPCMAudio("audio-testing\\draftSong.mp3"), volume=0.5))
+        voice.play(discord.PCMVolumeTransformer(discord.FFmpegPCMAudio("audio-testing/draftSong.mp3"), volume=0.5))
         await asyncio.sleep(7)
         voice.stop()
 
@@ -163,15 +147,13 @@ async def stop(ctx):
 async def addThemeSong(ctx, url : str, member : discord.Member = None):
     await ctx.send("Loading theme song...")
     member = member or ctx.author
-    songDirectory = f'theme-songs\\{member}'
-    print(songDirectory)
-    print(url)
+    songDirectory = f'theme-songs/{member}'
     hasThemeSongFolder = os.path.isdir(songDirectory)
     if hasThemeSongFolder:
-        song_there = os.path.isfile(f'{songDirectory}\\themeSong.mp3')
+        song_there = os.path.isfile(f'{songDirectory}/themeSong.mp3')
         try:
             if song_there:
-                os.remove(f'{songDirectory}\\themeSong.mp3')
+                os.remove(f'{songDirectory}/themeSong.mp3')
         except PermissionError:
             await ctx.send("User has a folder, but no song file! Please contact dev.")
             return
@@ -182,12 +164,88 @@ async def addThemeSong(ctx, url : str, member : discord.Member = None):
             ydl.download([url])
             for file in os.listdir('./'):
                 if file.endswith(".mp3"):
-                    os.rename(file, f'{songDirectory}\\themeSong.mp3')
+                    os.rename(file, f'{songDirectory}/themeSong.mp3')
     except:
             await ctx.channel.purge(limit = 1)
             await ctx.send("Error downloading song! Please try again.")
     print("Theme Song successfully added!")
     await ctx.channel.purge(limit = 1)
     await ctx.send("Theme Song Added!")
+
+@client.command()
+async def playRex(ctx):
+    voiceChannel = discord.utils.get(ctx.guild.voice_channels, name='anime')
+    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+    if voice is None:
+        await voiceChannel.connect()
+    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+    voice.play(discord.FFmpegPCMAudio("audio-testing/Rexs_Journey_Remastered_1.mp3"))
+
+@client.command()
+async def playJaag(ctx):
+    voiceChannel = discord.utils.get(ctx.guild.voice_channels, name='anime')
+    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+    if voice is None:
+        await voiceChannel.connect()
+    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+    voice.play(discord.FFmpegPCMAudio("audio-testing/j.A.A.g_city_3.mp3"))
+
+
+@client.command()
+async def playKnowJoe(ctx):
+    voiceChannel = discord.utils.get(ctx.guild.voice_channels, name='anime')
+    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+    if voice is None:
+        await voiceChannel.connect()
+    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+    voice.play(discord.FFmpegPCMAudio("audio-testing/Know_Joe_Self.mp3"))
+
+
+@client.command()
+async def playWeBack(ctx):
+    voiceChannel = discord.utils.get(ctx.guild.voice_channels, name='anime')
+    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+    if voice is None:
+        await voiceChannel.connect()
+    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+    voice.play(discord.FFmpegPCMAudio("audio-testing/We_Back_feat._The_Buckets.mp3"))
+
+
+# NEED TO MOVE TO SEPERATE MODULE IN THE FUTURE https://1001albumsgenerator.com/?joinGroup=discord-bot
+
+@client.command()
+async def joinGroup(ctx):                     
+    ctx.send('https://1001albumsgenerator.com/?joinGroup=discord-bot')
+
+@client.command()
+async def aotd(ctx, username='swiftarrow4'):
+    # response object is given to you
+    request = requests.get(f'https://1001albumsgenerator.com/api/v1/projects/{username}')
+    requestData = json.loads(request.text)
+    currentAlbum = requestData['currentAlbum']
+    albumName = currentAlbum['name']
+    albumArtist = currentAlbum['artist']
+    albumImage = currentAlbum['images'][1]['url']
+    albumLink = currentAlbum['spotifyId']
+
+    embed = discord.Embed(title=f'{albumName} by {albumArtist}', color=discord.Color.blue(), url=f'https://open.spotify.com/album/{albumLink}?si=hV_-OPGBTHGvstYz1TjxbQ')
+    # embed2 = discord.Embed()
+    # embed2.provider(url="https://open.spotify.com/embed/album/{albumLink}?utm_source=generator")
+    embed.set_image(url=albumImage)
+    # embed.set_footer(text='Spotify Link',icon_url=)
+    await ctx.send(embed=embed)
+
+@client.command()
+async def vote(ctx, rating):
+    if rating < 1 or rating > 5:
+        return ctx.send('Please input a number between 1 and 5')
+    await ctx.send(f'Please register to give a rating at {command_prefix}joinGroup')
+
+@client.command()
+async def summary(ctx, user='swiftarrow4'):
+    request = requests.get(f'https://1001albumsgenerator.com/api/v1/projects/{user}')
+    requestData = json.loads(request.text)
+    summary = requestData['shareableUrl']
+    await ctx.send(f'Summary page for {user}: {summary}')
 
 client.run(os.getenv('GUILD_TOKEN'))
