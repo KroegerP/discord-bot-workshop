@@ -1,17 +1,19 @@
 import discord
-
-from discord.ext import commands
-from discord import FFmpegPCMAudio, PCMVolumeTransformer
-from dotenv import load_dotenv
 import youtube_dl
 import os
 import requests
 import json
 import asyncio
 
+from discord.ext import commands
+from discord import FFmpegPCMAudio, PCMVolumeTransformer
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+
+from albumGenerator import AlbumGenerator
+
 # client = discord.Client()
 # creating a connection
-# client = commands.Bot(command_prefix = 'mybot ')
 command_prefix = '$'
 # Loading in the .env file that has our guild token
 load_dotenv('.env')
@@ -26,7 +28,7 @@ ydl_opts = {
             }],
         }
 
-client = commands.Bot(command_prefix)
+client = commands.Bot(os.getenv('COMMAND_PREFIX'))
 
 # @ is a decorator functions
 @client.event
@@ -219,20 +221,10 @@ async def joinGroup(ctx):
 
 @client.command()
 async def aotd(ctx, username='swiftarrow4'):
-    # response object is given to you
-    request = requests.get(f'https://1001albumsgenerator.com/api/v1/projects/{username}')
-    requestData = json.loads(request.text)
-    currentAlbum = requestData['currentAlbum']
-    albumName = currentAlbum['name']
-    albumArtist = currentAlbum['artist']
-    albumImage = currentAlbum['images'][1]['url']
-    albumLink = currentAlbum['spotifyId']
+    albumData = AlbumGenerator.GetAlbumOTD(username)
 
-    embed = discord.Embed(title=f'{albumName} by {albumArtist}', color=discord.Color.blue(), url=f'https://open.spotify.com/album/{albumLink}?si=hV_-OPGBTHGvstYz1TjxbQ')
-    # embed2 = discord.Embed()
-    # embed2.provider(url="https://open.spotify.com/embed/album/{albumLink}?utm_source=generator")
-    embed.set_image(url=albumImage)
-    # embed.set_footer(text='Spotify Link',icon_url=)
+    embed = discord.Embed(title="{albumName} by {albumArtist}".format(**albumData), color=discord.Color.blue(), url="https://open.spotify.com/album/{albumSpotifyLink}?si=hV_-OPGBTHGvstYz1TjxbQ".format(**albumData))
+    embed.set_image(url=albumData['albumImage'])
     await ctx.send(embed=embed)
 
 @client.command()
@@ -243,9 +235,11 @@ async def vote(ctx, rating):
 
 @client.command()
 async def summary(ctx, user='swiftarrow4'):
-    request = requests.get(f'https://1001albumsgenerator.com/api/v1/projects/{user}')
-    requestData = json.loads(request.text)
-    summary = requestData['shareableUrl']
+    response = requests.get(f'https://1001albumsgenerator.com/api/v1/projects/{user}')
+    soup = BeautifulSoup(response.content, 'html.parser')
+    # TODO: Parse html page for summary data
+    responseData = json.loads(response.text)
+    summary = responseData['shareableUrl']
     await ctx.send(f'Summary page for {user}: {summary}')
 
 client.run(os.getenv('GUILD_TOKEN'))
